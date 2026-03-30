@@ -15,6 +15,8 @@ router.register(r"ram", views.RamViewSet)
 router.register(r"almacenamientos", views.AlmacenamientoViewSet)
 router.register(r"laptops", views.LaptopViewSet)
 router.register(r"celulares", views.CelularViewSet)
+router.register(r"areas", views.AreaViewSet)
+router.register(r"empleados", views.EmpleadoViewSet)    
 
 urlpatterns = [
     path("", include(router.urls)),

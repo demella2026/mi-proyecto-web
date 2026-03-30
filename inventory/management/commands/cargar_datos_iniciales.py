@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from inventory.models import (
-    Marca, Modelo, TipoProcesador, Ram, Almacenamiento, Laptop, Celular,
+    Empleado, Marca, Modelo, Procesador, Ram, Almacenamiento, Laptop, Celular, Area, Empleado
 )
 
 
@@ -9,7 +9,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('📦 Cargando datos iniciales...\n')
+        # ── ÁREAS Y EMPLEADOS ──
+        area_it, _ = Area.objects.get_or_create(nombre="Sistemas", defaults={'descripcion': 'Departamento de TI'})
 
+        Empleado.objects.get_or_create(
+            email="admin@empresa.com",
+            defaults={
+                'nombre': "Administrador General",
+                'cargo': "Jefe de TI",
+                'area': area_it,
+                'activo': True
+            }
+        )
         # ── MARCAS ──
         marcas_data = ['HP', 'Dell', 'Lenovo', 'Apple', 'Samsung', 'Xiaomi', 'Motorola']
         marcas = {}
@@ -60,7 +71,7 @@ class Command(BaseCommand):
         ]
         procesadores = {}
         for nombre in procesadores_data:
-            obj, created = TipoProcesador.objects.get_or_create(nombre=nombre)
+            obj, created = Procesador.objects.get_or_create(nombre=nombre)
             procesadores[nombre] = obj
             if created:
                 self.stdout.write(f'  ✅ Procesador: {nombre}')
@@ -95,10 +106,13 @@ class Command(BaseCommand):
             ('SN-LP-008', 'Inspiron 15 3520', 'Intel Core i5-1235U', '8 GB', '512 GB SSD', 'ACTIVO'),
         ]
         for ns, modelo_n, proc_n, ram_n, almac_n, estado in laptops_data:
+            modelo_obj = modelos[modelo_n]  # El objeto Modelo que ya creamos
+
             obj, created = Laptop.objects.get_or_create(
                 numero_serie=ns,
                 defaults={
-                    'modelo': modelos[modelo_n],
+                    'marca': modelo_obj.marca,    # <--- ESTA ES LA LÍNEA CLAVE
+                    'modelo': modelo_obj,
                     'procesador': procesadores[proc_n],
                     'ram': rams[ram_n],
                     'almacenamiento': almacs[almac_n],
@@ -119,11 +133,14 @@ class Command(BaseCommand):
             ('SN-CL-007', '350000000000007', 'Moto G54', '4 GB', '128 GB SSD', 'BAJA'),
         ]
         for ns, imei, modelo_n, ram_n, almac_n, estado in celulares_data:
+            modelo_obj = modelos[modelo_n]
+
             obj, created = Celular.objects.get_or_create(
                 numero_serie=ns,
                 defaults={
                     'imei': imei,
-                    'modelo': modelos[modelo_n],
+                    'marca': modelo_obj.marca,    # <--- TAMBIÉN AQUÍ
+                    'modelo': modelo_obj,
                     'ram': rams[ram_n],
                     'almacenamiento': almacs[almac_n],
                     'estado': estado,
@@ -137,7 +154,7 @@ class Command(BaseCommand):
             '🎉 Datos iniciales cargados:\n'
             f'   Marcas:          {Marca.objects.count()}\n'
             f'   Modelos:         {Modelo.objects.count()}\n'
-            f'   Procesadores:    {TipoProcesador.objects.count()}\n'
+            f'   Procesadores:    {Procesador.objects.count()}\n'
             f'   RAM:             {Ram.objects.count()}\n'
             f'   Almacenamiento:  {Almacenamiento.objects.count()}\n'
             f'   Laptops:         {Laptop.objects.count()}\n'

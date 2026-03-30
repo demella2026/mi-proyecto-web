@@ -9,3 +9,4 @@ reportlab==4.2.5
 psycopg[binary]
 gunicorn==22.0.0
 django-simple-history==3.7.0
+whitenoise==6.7.0
