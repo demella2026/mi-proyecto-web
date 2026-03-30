@@ -1,13 +1,11 @@
-version: "3.9"
+
 services:
   db:
     image: postgres:16-alpine
     container_name: inventario_db
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: inventario_db
-      POSTGRES_USER: inventario_user
-      POSTGRES_PASSWORD: inventario_pass
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -18,22 +16,14 @@ services:
       timeout: 5s
       retries: 10
 
-  # ────────────────────────────────────────────
-  #  Aplicación Django / DRF
-  # ────────────────────────────────────────────
   web:
     build: .
     container_name: inventario_web
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      DJANGO_SECRET_KEY: "clave-secreta-cambiar-en-produccion-abc123"
-      DJANGO_DEBUG: "True"
-      DJANGO_ALLOWED_HOSTS: "*"
-      POSTGRES_DB: inventario_db
-      POSTGRES_USER: inventario_user
-      POSTGRES_PASSWORD: inventario_pass
-      POSTGRES_HOST: db
-      POSTGRES_PORT: "5432"
+      - POSTGRES_HOST=db  # Sobrescribimos localhost por 'db' dentro de Docker
     ports:
       - "8000:8000"
     depends_on:
@@ -41,8 +31,8 @@ services:
         condition: service_healthy
     volumes:
       - static_files:/app/staticfiles
+      - .:/app  # ESTO ES NUEVO: Sincroniza tu código local con el contenedor
 
-  # ── React Frontend ──
   frontend:
     build:
       context: ./frontend

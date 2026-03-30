@@ -3,6 +3,8 @@ from django.urls import path, include
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
+from inventory.views import AreaViewSet, EmpleadoViewSet, LaptopViewSet
+
 
 @api_view(["GET"])
 def api_root(request):
