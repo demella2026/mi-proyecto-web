@@ -1,0 +1,290 @@
+erDiagram
+
+%% ═══════════════════════════════════════
+%%  DJANGO BUILT-INS
+%% ═══════════════════════════════════════
+
+    auth_User {
+        int     id PK
+        string  username
+        string  first_name
+        string  last_name
+        string  email
+        bool    is_staff
+        bool    is_active
+        bool    is_superuser
+    }
+
+    django_ContentType {
+        int    id PK
+        string app_label
+        string model
+    }
+
+%% ═══════════════════════════════════════
+%%  APP: inventory — CATALOGOS
+%% ═══════════════════════════════════════
+
+    Marca {
+        int    id PK
+        string nombre UK
+    }
+
+    Modelo {
+        int    id PK
+        int    marca_id FK
+        string nombre
+    }
+
+    Procesador {
+        int    id PK
+        string nombre UK
+    }
+
+    Ram {
+        int    id PK
+        string capacidad UK
+    }
+
+    Almacenamiento {
+        int    id PK
+        string capacidad UK
+    }
+
+%% ═══════════════════════════════════════
+%%  APP: inventory — ORGANIZACION
+%% ═══════════════════════════════════════
+
+    Area {
+        int    id PK
+        string nombre UK
+        text   descripcion
+    }
+
+    Empleado {
+        int    id PK
+        string nombre
+        string email UK
+        string cargo
+        int    area_id FK
+        bool   activo
+    }
+
+%% ═══════════════════════════════════════
+%%  APP: inventory — EQUIPOS
+%% ═══════════════════════════════════════
+
+    Laptop {
+        int    id PK
+        string numero_serie UK
+        int    marca_id FK
+        int    modelo_id FK
+        int    procesador_id FK
+        int    ram_id FK
+        int    almacenamiento_id FK
+        string estado
+        int    empleado_asignado_id FK "nullable"
+        date   fecha_ingreso
+        text   notas
+    }
+
+    Celular {
+        int    id PK
+        string imei UK
+        string numero_serie UK
+        int    marca_id FK
+        int    modelo_id FK
+        int    ram_id FK
+        int    almacenamiento_id FK
+        string estado
+        int    empleado_asignado_id FK "nullable"
+        date   fecha_ingreso
+        text   notas
+    }
+
+%% ═══════════════════════════════════════
+%%  APP: inventory — HISTORICAL (simple-history)
+%% ═══════════════════════════════════════
+
+    HistoricalLaptop {
+        int      history_id PK
+        int      id "equipo original"
+        string   numero_serie
+        string   estado
+        int      empleado_asignado_id
+        datetime history_date
+        string   history_type "+ / ~ / -"
+        int      history_user_id FK "nullable"
+    }
+
+    HistoricalCelular {
+        int      history_id PK
+        int      id "equipo original"
+        string   imei
+        string   estado
+        int      empleado_asignado_id
+        datetime history_date
+        string   history_type "+ / ~ / -"
+        int      history_user_id FK "nullable"
+    }
+
+%% ═══════════════════════════════════════
+%%  APP: auditlog
+%% ═══════════════════════════════════════
+
+    RegistroCambio {
+        int      id PK
+        int      content_type_id FK
+        int      object_id "GenericFK"
+        string   accion
+        string   campo
+        text     valor_anterior
+        text     valor_nuevo
+        text     descripcion
+        string   usuario
+        string   direccion_ip
+        datetime fecha
+    }
+
+%% ═══════════════════════════════════════
+%%  APP: mantenimiento
+%% ═══════════════════════════════════════
+
+    Mantenimiento {
+        int      id PK
+        int      content_type_id FK
+        int      object_id "GenericFK: Laptop o Celular"
+        string   tipo "preventivo / correctivo"
+        string   estado
+        text     descripcion
+        text     diagnostico
+        text     componentes_cambiados
+        bool     actualizar_specs
+        int      nueva_ram_id FK "nullable"
+        int      nuevo_almacenamiento_id FK "nullable"
+        int      nuevo_procesador_id FK "nullable"
+        decimal  costo_repuestos
+        decimal  costo_mano_obra
+        int      tecnico_responsable_id FK "nullable"
+        string   proveedor_externo
+        datetime fecha_creacion
+        datetime fecha_inicio
+        datetime fecha_fin
+        text     notas
+    }
+
+    ArchivoMantenimiento {
+        int      id PK
+        int      mantenimiento_id FK
+        string   archivo "FileField /media/"
+        string   tipo "foto_antes/foto_despues/documento/otro"
+        string   descripcion
+        datetime fecha_subida
+    }
+
+%% ═══════════════════════════════════════
+%%  APP: actas
+%% ═══════════════════════════════════════
+
+    ActaEntrega {
+        int      id PK
+        string   numero_acta UK "ACTA-YYYYMMDD-XXXX"
+        int      content_type_id FK
+        int      object_id "GenericFK: Laptop o Celular"
+        string   tipo_acta "entrega/devolucion/cambio"
+        string   estado "borrador/pendiente_firma/firmada/anulada"
+        int      empleado_id FK
+        int      responsable_ti_id FK "nullable"
+        json     detalle_equipo "snapshot specs"
+        text     observaciones
+        text     accesorios
+        text     condiciones_uso
+        text     firma_empleado_imagen "base64"
+        text     firma_responsable_imagen "base64"
+        string   firma_digital_hash "SHA-256"
+        string   certificado_serial
+        datetime firma_digital_timestamp
+        bool     firma_digital_valida
+        string   archivo_pdf "FileField /media/"
+        datetime fecha_creacion
+        datetime fecha_firma
+    }
+
+%% ═══════════════════════════════════════
+%%  APP: ldapsync
+%% ═══════════════════════════════════════
+
+    SyncLog {
+        int      id PK
+        datetime fecha
+        string   estado "exitoso/parcial/fallido"
+        int      empleados_creados
+        int      empleados_actualizados
+        int      empleados_desactivados
+        text     errores
+        float    duracion_segundos
+        string   ejecutado_por
+    }
+
+    LDAPMapping {
+        int    id PK
+        string atributo_ldap UK "ej: sAMAccountName"
+        string campo_empleado "ej: nombre"
+        bool   activo
+    }
+
+
+%% ═══════════════════════════════════════
+%%  RELACIONES — CATALOGOS
+%% ═══════════════════════════════════════
+
+    Marca       ||--o{ Modelo         : "tiene"
+    Marca       ||--o{ Laptop         : "marca de"
+    Marca       ||--o{ Celular        : "marca de"
+    Modelo      ||--o{ Laptop         : "modelo de"
+    Modelo      ||--o{ Celular        : "modelo de"
+    Procesador  ||--o{ Laptop         : "procesador de"
+    Ram         ||--o{ Laptop         : "RAM de"
+    Ram         ||--o{ Celular        : "RAM de"
+    Almacenamiento ||--o{ Laptop      : "almacenamiento de"
+    Almacenamiento ||--o{ Celular     : "almacenamiento de"
+
+%% ═══════════════════════════════════════
+%%  RELACIONES — ORGANIZACION / EQUIPOS
+%% ═══════════════════════════════════════
+
+    Area        ||--o{ Empleado       : "pertenece a"
+    Empleado    |o--o{ Laptop         : "asignado a"
+    Empleado    |o--o{ Celular        : "asignado a"
+
+%% ═══════════════════════════════════════
+%%  RELACIONES — HISTORIAL (simple-history)
+%% ═══════════════════════════════════════
+
+    auth_User   |o--o{ HistoricalLaptop  : "modifico"
+    auth_User   |o--o{ HistoricalCelular : "modifico"
+
+%% ═══════════════════════════════════════
+%%  RELACIONES — AUDITLOG (GenericFK)
+%% ═══════════════════════════════════════
+
+    django_ContentType ||--o{ RegistroCambio  : "registra cambios de"
+
+%% ═══════════════════════════════════════
+%%  RELACIONES — MANTENIMIENTO
+%% ═══════════════════════════════════════
+
+    django_ContentType ||--o{ Mantenimiento       : "tipo de equipo"
+    Ram                |o--o{ Mantenimiento       : "nueva RAM"
+    Almacenamiento     |o--o{ Mantenimiento       : "nuevo almacenamiento"
+    Procesador         |o--o{ Mantenimiento       : "nuevo procesador"
+    auth_User          |o--o{ Mantenimiento       : "tecnico responsable"
+    Mantenimiento      ||--o{ ArchivoMantenimiento: "adjuntos"
+
+%% ═══════════════════════════════════════
+%%  RELACIONES — ACTAS DE ENTREGA
+%% ═══════════════════════════════════════
+
+    django_ContentType ||--o{ ActaEntrega  : "tipo de equipo"
+    Empleado           ||--o{ ActaEntrega  : "receptor del acta"
+    auth_User          |o--o{ ActaEntrega  : "responsable TI"

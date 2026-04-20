@@ -26,8 +26,9 @@ export default function Historial() {
           <select value={filtro} onChange={(e) => setFiltro(e.target.value)}
             className="px-3 py-2 border rounded-lg text-sm">
             <option value="">Todos</option>
-            <option value="laptop">Solo Laptops</option>
-            <option value="celular">Solo Celulares</option>
+            <option value="computador">Computadores</option>
+            <option value="celular">Celulares</option>
+            <option value="monitor">Monitores</option>
           </select>
         </div>
       </div>
@@ -43,7 +44,9 @@ export default function Historial() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                 <div className="flex items-center gap-3">
                   <span className={`px-2 py-1 rounded text-xs font-bold
-                    ${r.tipo_equipo === "Laptop" ? "bg-indigo-100 text-indigo-800" : "bg-purple-100 text-purple-800"}`}>
+                    ${r.tipo_equipo === "Computador" ? "bg-indigo-100 text-indigo-800"
+                      : r.tipo_equipo === "Monitor" ? "bg-cyan-100 text-cyan-800"
+                      : "bg-purple-100 text-purple-800"}`}>
                     {r.tipo_equipo}
                   </span>
                   <span className={`px-2 py-1 rounded text-xs font-medium

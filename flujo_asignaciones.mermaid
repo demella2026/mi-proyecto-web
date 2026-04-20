@@ -1,0 +1,78 @@
+flowchart TD
+    classDef accion fill:#3B82F6,color:#fff,stroke:#2563EB,rx:8
+    classDef decision fill:#F59E0B,color:#fff,stroke:#D97706
+    classDef estado fill:#10B981,color:#fff,stroke:#059669
+    classDef error fill:#EF4444,color:#fff,stroke:#DC2626
+    classDef bodega fill:#6B7280,color:#fff,stroke:#4B5563
+
+    %% ══════════════════════════════════════════
+    %%  FLUJO CELULAR
+    %% ══════════════════════════════════════════
+    subgraph CELULAR["📱 Celular"]
+        direction TB
+        C_NUEVO([Nuevo Celular]):::accion
+        C_EMP{¿Tiene empleado\nasignado?}:::decision
+        C_ENUSO[Estado: EN USO\nEmpleado asignado]:::estado
+        C_BODEGA[Estado: EN BODEGA\nSin empleado]:::bodega
+        C_CHIP{¿Insertar chip\nSIM?}:::decision
+        C_CHIPOK[Ir a flujo Chip →\nVinculado al celular]:::estado
+        C_CHIPNO[Chip puede asignarse\nluego desde Chips/SIM]:::bodega
+
+        C_NUEVO --> C_EMP
+        C_EMP -->|Sí| C_ENUSO
+        C_EMP -->|No| C_BODEGA
+        C_ENUSO --> C_CHIP
+        C_CHIP -->|Sí| C_CHIPOK
+        C_CHIP -->|No| C_CHIPNO
+        C_BODEGA -.->|"❌ NO es posible\nagregar chip aún"| C_CHIPNO
+    end
+
+    %% ══════════════════════════════════════════
+    %%  FLUJO CHIP / SIM
+    %% ══════════════════════════════════════════
+    subgraph CHIP["🔌 Chip / SIM"]
+        direction TB
+        CH_NUEVO([Nuevo Chip]):::accion
+        CH_DESTINO{¿Destino del chip?}:::decision
+
+        CH_EMP[Asignar directo\na empleado]:::accion
+        CH_CEL{Insertar en celular\n¿Celular tiene\nempleado asignado?}:::decision
+        CH_CELEMPL[Seleccionar celular ✔\nSolo muestra celulares\ncon empleado asignado]:::estado
+        CH_CELSIN[❌ No disponible\nEl celular debe tener\nun empleado primero]:::error
+        CH_BODEGA2[Dejar en bodega\nSin asignación]:::bodega
+
+        CH_NUEVO --> CH_DESTINO
+        CH_DESTINO -->|"Empleado solo\n(sin teléfono)"| CH_EMP
+        CH_DESTINO -->|"Insertar en celular"| CH_CEL
+        CH_DESTINO -->|"En bodega"| CH_BODEGA2
+        CH_CEL -->|"Sí tiene empleado"| CH_CELEMPL
+        CH_CEL -->|"No tiene empleado"| CH_CELSIN
+        CH_CELEMPL --> CH_FINAL[Estado: EN USO\nChip vinculado a celular\n+ empleado heredado]:::estado
+        CH_EMP --> CH_FINAL
+    end
+
+    %% ══════════════════════════════════════════
+    %%  FLUJO MONITOR
+    %% ══════════════════════════════════════════
+    subgraph MONITOR["🖥️ Monitor"]
+        direction TB
+        M_NUEVO([Nuevo Monitor]):::accion
+        M_PC{¿Conectar a\ncomputador?}:::decision
+        M_PCEMPL{¿Computador tiene\nempleado asignado?}:::decision
+        M_PCSINO[❌ No disponible\nEl computador debe tener\nun empleado primero]:::error
+        M_PCOK[Seleccionar computador ✔\nSolo muestra computadores\ncon empleado asignado]:::estado
+        M_CC{¿Asignar a\nCentro de Costo?}:::decision
+        M_CCOK[Asignar a CC / Obra]:::estado
+        M_BODEGA3[Dejar en bodega]:::bodega
+
+        M_NUEVO --> M_PC
+        M_PC -->|Sí| M_PCEMPL
+        M_PC -->|No| M_CC
+        M_PCEMPL -->|"Sí tiene empleado"| M_PCOK
+        M_PCEMPL -->|"No tiene empleado"| M_PCSINO
+        M_PCOK --> M_CC
+        M_CC -->|Sí| M_CCOK
+        M_CC -->|No| M_BODEGA3
+        M_CCOK --> M_FINAL[Estado: EN USO\nMonitor vinculado\na obra/empleado]:::estado
+        M_BODEGA3 --> M_FINAL2[Estado: EN BODEGA]:::bodega
+    end

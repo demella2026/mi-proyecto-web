@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagramas de Procesos TI — Elecnor Chile</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a1a2e; }
+
+    .header {
+      background: linear-gradient(135deg, #1E4D8C 0%, #0d2d5e 100%);
+      padding: 28px 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header h1 { color: #fff; font-size: 20px; font-weight: 700; }
+    .header p  { color: #a8c4e8; font-size: 12px; margin-top: 2px; }
+
+    .nav-pills {
+      display: flex; gap: 8px; margin-top: 14px; overflow-x: auto; padding-bottom: 2px; flex-wrap: wrap;
+    }
+    .nav-pill {
+      padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      background: rgba(255,255,255,0.15); color: #c8daf0; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.2); text-decoration: none; white-space: nowrap;
+    }
+    .nav-pill:hover { background: rgba(255,255,255,0.28); color: #fff; }
+
+    .content { padding: 36px 40px; max-width: 1100px; margin: 0 auto; }
+
+    .section { margin-bottom: 60px; scroll-margin-top: 120px; }
+    .section-badge {
+      display: inline-block; padding: 3px 12px; border-radius: 12px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .badge-gray   { background: #374151; color: #fff; }
+    .badge-red    { background: #c0392b; color: #fff; }
+    .badge-orange { background: #d35400; color: #fff; }
+    .badge-green  { background: #1a7a3e; color: #fff; }
+    .badge-purple { background: #7b2d8b; color: #fff; }
+    .badge-blue   { background: #1E4D8C; color: #fff; }
+
+    .section-title { font-size: 20px; font-weight: 700; color: #1E4D8C; margin-bottom: 6px; }
+    .section-sub   { font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 24px; }
+
+    .card {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(30,77,140,0.08);
+      border: 1px solid #dce6f4; margin-bottom: 28px; overflow: hidden;
+    }
+    .card-header {
+      padding: 14px 24px; border-bottom: 1px solid #e8eef7;
+      font-size: 14px; font-weight: 700; color: #222;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-header.blue   { background: #f0f5ff; }
+    .card-header.red    { background: #fff5f5; }
+    .card-header.orange { background: #fff8f0; }
+    .card-header.green  { background: #f0fff5; }
+    .card-header.purple { background: #f8f0ff; }
+
+    .card-body { padding: 24px; overflow-x: auto; }
+    .card-body .mermaid { display: flex; justify-content: center; }
+
+    .alert {
+      border-radius: 10px; padding: 13px 16px; font-size: 13px;
+      line-height: 1.6; margin-bottom: 20px; display: flex; gap: 10px;
+    }
+    .alert-warn    { background: #fff8e1; border-left: 4px solid #f39c12; color: #7d5a00; }
+    .alert-info    { background: #e8f4fd; border-left: 4px solid #2980b9; color: #1a4d75; }
+    .alert-success { background: #eafaf1; border-left: 4px solid #27ae60; color: #155724; }
+
+    .divider {
+      border: none; border-top: 2px solid #dce6f4;
+      margin: 50px 0 40px;
+    }
+
+    table.ctable { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.ctable th { background: #1E4D8C; color: #fff; padding: 10px 14px; text-align: left; }
+    table.ctable td { padding: 10px 14px; border-bottom: 1px solid #e8eef7; vertical-align: top; }
+    table.ctable tr:nth-child(even) td { background: #f8fafd; }
+    .pill { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .pill-red    { background: #fde8e8; color: #c0392b; }
+    .pill-yellow { background: #fef9e7; color: #d35400; }
+
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 28px; }
+    .ccard { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-top: 4px solid; }
+    .ccard.blue   { border-color: #2980b9; }
+    .ccard.green  { border-color: #27ae60; }
+    .ccard.purple { border-color: #8e44ad; }
+    .ccard h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .ccard ul { padding-left: 16px; font-size: 13px; line-height: 1.85; color: #444; }
+    .ctag { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px; display: inline-block; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Diagramas de Procesos TI — Elecnor Chile</h1>
+  <p>Proceso actual de preparación y despliegue de equipos · Problemas · Propuestas de mejora</p>
+  <nav class="nav-pills">
+    <a class="nav-pill" href="#actual">🖥️ Proceso Actual</a>
+    <a class="nav-pill" href="#problemas">⚠️ Problemas</a>
+    <a class="nav-pill" href="#vpn">🔐 VPN + GPO</a>
+    <a class="nav-pill" href="#intune">☁️ Intune</a>
+    <a class="nav-pill" href="#encargado">👷 Encargado de Obra</a>
+    <a class="nav-pill" href="#comparacion">📊 Comparación</a>
+  </nav>
+</div>
+
+<div class="content">
+
+  <!-- ══════════════════════════════════════════════
+       SECCIÓN 1: PROCESO ACTUAL
+  ══════════════════════════════════════════════ -->
+  <div class="section" id="actual">
+    <span class="section-badge badge-gray">Estado Actual</span>
+    <div class="section-title">Proceso Actual de Preparación y Despliegue</div>
+    <p class="section-sub">
+      Flujo completo desde que llega el equipo hasta que se despacha a terreno. Todo ocurre en la oficina central TI de forma manual y secuencial. Una vez en faena, el equipo opera desconectado del DC — las políticas quedan congeladas al momento del join.
+    </p>
+
+    <div class="card">
+      <div class="card-header blue">🖥️ Flujo de preparación en oficina y ciclo de vida en terreno</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart TD
+    A([📦 Equipo nuevo\nllega a oficina TI]):::inicio --> B
+
+    B["🔧 ETAPA 1 — Formateo\n───────────────────────\nLimpiar disco completo\nVerificar hardware\nBIOS configurado"]:::etapa --> C
+
+    C["💿 ETAPA 2 — Instalación Windows\n─────────────────────────────────\nBoot desde pendrive USB\nCopia de imagen con cuenta\nlocaladmin pre-configurada"]:::etapa --> D
+
+    D["📜 ETAPA 3 — Ejecución de Script\n──────────────────────────────────\n① Instalar aplicaciones corporativas\n② Aplicar políticas del AD vía script\n③ Instalar antivirus\n④ Bloquear puertos\n⑤ Configuraciones de seguridad"]:::etapa --> E
+
+    E{Script OK?}:::decision
+    E -- ❌ Error --> D
+    E -- ✅ OK --> F
+
+    F["🏠 ETAPA 4 — Join al Dominio\n──────────────────────────────\nUnir equipo al Active Directory\nAplicar GPO inicial del DC\nVerificar auth de dominio"]:::etapa --> G
+
+    G{Join OK?}:::decision
+    G -- ❌ Falla --> F
+    G -- ✅ OK --> H
+
+    H["📦 ETAPA 5 — Microsoft 365\n────────────────────────────\nActivar licencia corporativa\nOutlook · Teams · OneDrive\nVerificar sincronización"]:::etapa --> I
+
+    I["✅ Control de Calidad\n──────────────────────\nDominio · Antivirus · Apps\nRegistrar en inventario"]:::etapa --> J
+
+    J([🚚 Equipo despachado\na terreno / faena]):::fin --> K
+
+    K["📍 ESTADO EN TERRENO\n─────────────────────────\n❄️ Políticas CONGELADAS\nal momento del join inicial\nSin conexión directa al DC\nSin actualizaciones remotas"]:::alerta
+
+    K --> L{Ocurre\nproblema?}:::decision
+    L -- ✅ Sin problema --> K
+    L -- "🛠️ Software / política\ndesactualizada" --> M
+
+    M["⛔ RETORNO FÍSICO OBLIGATORIO\n──────────────────────────────\n📦 Equipo viaja a oficina\n⏱️ 2 a 5 días hábiles\n💰 Costo de logística\n🔁 Reinicia el proceso"]:::bloqueante --> B
+
+    classDef inicio  fill:#1E4D8C,color:#fff,stroke:#0d2d5e,font-weight:bold
+    classDef fin     fill:#27ae60,color:#fff,stroke:#1a7a3e,font-weight:bold
+    classDef etapa   fill:#eef3fb,stroke:#2980b9,color:#1a1a2e
+    classDef decision fill:#fff8e1,stroke:#f39c12,color:#7d5a00
+    classDef alerta  fill:#fff3cd,stroke:#f39c12,color:#7d5a00,font-weight:bold
+    classDef bloqueante fill:#fde8e8,stroke:#c0392b,color:#7b0000,font-weight:bold
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header blue">🔄 Comunicación actual entre equipo en terreno y oficina central</div>
+      <div class="card-body">
+        <div class="mermaid">
+sequenceDiagram
+    actor Eq as 💻 Equipo en Faena
+    participant DC as 🏢 Domain Controller
+    participant TI as 👨‍💻 Equipo TI
+    participant AV as 🛡️ Antivirus
+
+    Note over Eq: Equipo llega a faena con<br/>configuración del día del join
+
+    DC--xEq: ❌ Nueva GPO — sin conexión
+    AV--xEq: ❌ Actualización central — sin acceso
+    TI--xEq: ❌ Sin acceso remoto
+
+    Note over Eq: Semanas operando fuera<br/>de política actual del AD
+
+    Eq->>TI: 🚨 Reporte de problema<br/>(virus, software roto, política)
+
+    TI->>TI: Coordina despacho de retorno
+
+    Eq->>TI: 📦 Equipo viaja (2-5 días)
+
+    TI->>Eq: Reformatea y reprepara
+    TI->>DC: Re-join al dominio
+    DC->>Eq: ✅ GPO actualizada aplicada
+
+    Eq->>TI: 🚚 Equipo regresa a terreno
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ══════════════════════════════════════════════
+       SECCIÓN 2: PROBLEMAS
+  ══════════════════════════════════════════════ -->
+  <div class="section" id="problemas">
+    <span class="section-badge badge-red">Problemas Identificados</span>
+    <div class="section-title">Conflictos del Proceso Actual</div>
+    <p class="section-sub">
+      Puntos de fricción detectados en el flujo actual, especialmente los que crearían conflicto al intentar implementar VPN + GPO sobre la configuración existente.
+    </p>
+
+    <div class="alert alert-warn">
+      <span>⚠️</span>
+      <div><strong>Conflicto crítico:</strong> El antivirus instalado en la Etapa 3 bloquea puertos a nivel de host. Esos mismos puertos son los que necesita el cliente VPN (UDP 1194, UDP 51820, TCP 443). Si no se agrega una excepción explícita, la VPN no puede establecerse desde terreno.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header red">⚙️ Conflicto: Script aplica políticas ANTES del join al dominio</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart LR
+    A["📜 Script — ETAPA 3\nAntes del join\n──────────────\nFirewall rules\nRegistry keys\nSoftware config\nAntivirus rules"]:::etapa --> B
+
+    B["🏠 Join — ETAPA 4\nDominio aplica\nGPO real del AD"]:::etapa --> C
+
+    C{Conflicto entre\npolítica local\ny GPO del AD?}:::decision
+
+    C -- "✅ Sin conflicto" --> D["Configuración coherente\nGPO gana como esperado"]:::ok
+
+    C -- "⚠️ Hay conflicto" --> E["ZONA GRIS\n───────────────\nGPO gana para algunos valores\nScript local queda para otros\nConfiguración híbrida\nno documentada"]:::alerta
+
+    E --> F["🚫 Nadie sabe qué\nconfiguración está\nactiva en cada equipo\nRiesgo silencioso"]:::bloqueante
+
+    classDef etapa   fill:#eef3fb,stroke:#2980b9
+    classDef decision fill:#fff8e1,stroke:#f39c12,color:#7d5a00
+    classDef ok      fill:#d4edda,stroke:#27ae60
+    classDef alerta  fill:#fff3cd,stroke:#f39c12,color:#7d5a00
+    classDef bloqueante fill:#fde8e8,stroke:#c0392b,color:#7b0000
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header red">🛡️ Conflicto: Antivirus bloquea los puertos que necesita la VPN</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart TD
+    AV["🛡️ Antivirus instalado vía script\nBloquea puertos · Restringe tráfico"]:::alerta
+
+    P1["UDP 1194\nOpenVPN"]:::pill --> AV
+    P2["UDP 51820\nWireGuard"]:::pill --> AV
+    P3["TCP 443 SSL inspect\nAnyConnect / SSTP"]:::pill --> AV
+
+    AV --> D{Puerto\nbloqueado?}:::decision
+
+    D -- "✅ Libre" --> OK["VPN conecta\nsin problema"]:::ok
+    D -- "❌ Bloqueado" --> ERR["⛔ VPN no puede establecerse\ndesde terreno\nEl antivirus bloquea\nla solución que necesitamos"]:::bloqueante
+
+    ERR --> SOL["Solución necesaria:\nAgregar excepción VPN\nen política de antivirus\nANTES de desplegar\nlos clientes VPN"]:::warn
+
+    classDef pill     fill:#f0f4f8,stroke:#888,font-size:12px
+    classDef decision fill:#fff8e1,stroke:#f39c12,color:#7d5a00
+    classDef ok       fill:#d4edda,stroke:#27ae60
+    classDef alerta   fill:#fff3cd,stroke:#f39c12,color:#7d5a00
+    classDef bloqueante fill:#fde8e8,stroke:#c0392b,color:#7b0000
+    classDef warn     fill:#fff3cd,stroke:#f39c12,color:#7d5a00
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header red">📋 Resumen de problemas y severidad</div>
+      <div class="card-body">
+        <table class="ctable">
+          <thead>
+            <tr><th>#</th><th>Problema</th><th>Etapa afectada</th><th>Impacto</th><th>Severidad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Antivirus bloquea puertos VPN</td><td>Etapa 3 → VPN futura</td><td>VPN no establece conexión desde equipos ya desplegados</td><td><span class="pill pill-red">Alta</span></td></tr>
+            <tr><td>2</td><td>Políticas script antes del join → zona gris</td><td>Etapa 3 vs Etapa 4</td><td>Configuración híbrida no auditada por equipo</td><td><span class="pill pill-yellow">Media</span></td></tr>
+            <tr><td>3</td><td>Imagen localadmin sin sysprep → SID duplicado</td><td>Etapa 2</td><td>Conflictos de identidad en dominio; bloqueante para Intune</td><td><span class="pill pill-yellow">Media</span></td></tr>
+            <tr><td>4</td><td>GPO congelada post-despliegue</td><td>Post-despliegue</td><td>Equipos en faena sin actualización de política por meses</td><td><span class="pill pill-red">Alta</span></td></tr>
+            <tr><td>5</td><td>Cliente VPN no instalado en setup actual</td><td>Etapa 3</td><td>Equipos ya desplegados no pueden usar VPN sin reintervención</td><td><span class="pill pill-red">Alta</span></td></tr>
+            <tr><td>6</td><td>Retorno físico obligatorio para cualquier falla</td><td>Post-despliegue</td><td>2–5 días hábiles + costo logístico por incidente</td><td><span class="pill pill-red">Alta</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ══════════════════════════════════════════════
+       SECCIÓN 3: VPN + GPO
+  ══════════════════════════════════════════════ -->
+  <div class="section" id="vpn">
+    <span class="section-badge badge-orange">Propuesta A</span>
+    <div class="section-title">VPN + Aplicación Remota de GPO</div>
+    <p class="section-sub">
+      El proceso de preparación en oficina se mantiene casi igual. Se agregan 3 pasos al script: instalar cliente VPN, configurar perfil de conexión, y agregar excepción en el antivirus para los puertos VPN. Con esto, los equipos en terreno se conectan al DC y reciben actualizaciones de GPO sin regresar a la oficina.
+    </p>
+
+    <div class="alert alert-info">
+      <span>ℹ️</span>
+      <div><strong>Cambios al proceso actual:</strong> Solo se modifican las etapas resaltadas en naranja. El resto del flujo sigue exactamente igual. El cambio principal está en el Script (Etapa 3) y en el Control de Calidad (agregar verificación de VPN).</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header orange">🔐 Proceso modificado — cambios destacados</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart TD
+    A([📦 Equipo nuevo llega\na oficina TI]):::inicio --> B
+
+    B["🔧 ETAPA 1 — Formateo\nSin cambios"]:::etapa --> C
+
+    C["💿 ETAPA 2 — Windows\n⚠️ MEJORA RECOMENDADA\nUsar imagen sysprepeada\npara evitar SID duplicado"]:::cambio --> D
+
+    D["📜 ETAPA 3 — Script  ←  MODIFICADO\n──────────────────────────────────────\n① Instalar aplicaciones corporativas\n② 🆕 Instalar cliente VPN\n③ 🆕 Configurar perfil VPN auto-connect\n④ Aplicar políticas del AD\n⑤ Instalar antivirus\n⑥ Bloquear puertos\n⑦ 🆕 Agregar excepción VPN en antivirus"]:::cambio --> E
+
+    E{Script OK?}:::decision
+    E -- ❌ --> D
+    E -- ✅ --> F
+
+    F["🏠 ETAPA 4 — Join al Dominio\nSin cambios"]:::etapa --> G
+
+    G{Join OK?}:::decision
+    G -- ❌ --> F
+    G -- ✅ --> H
+
+    H["📦 ETAPA 5 — M365\nSin cambios"]:::etapa --> I
+
+    I["✅ ETAPA 6 — Control de Calidad\n⚠️ MODIFICADO\n+ Conectar VPN y verificar GPO\n+ Confirmar excepción activa\nen antivirus"]:::cambio --> J
+
+    J([🚚 Equipo despachado a terreno]):::fin --> K
+
+    K["📍 EN TERRENO\n──────────────────────\nVPN activa automáticamente\nal iniciar Windows\nEquipo conectado al DC"]:::ok --> L
+
+    L["📡 GPO se actualiza\ncada vez que el equipo\nconecta la VPN\nSin retorno físico"]:::ok --> M
+
+    M{Necesita\nactualización?}:::decision
+    M -- ✅ Sin cambio --> K
+    M -- "🔧 Nueva política o software" --> N
+
+    N["TI empuja nueva GPO desde el DC\nEquipo la recibe en próxima\nconexión VPN\n⚡ SIN retorno físico"]:::ok --> K
+
+    classDef inicio   fill:#1E4D8C,color:#fff,stroke:#0d2d5e,font-weight:bold
+    classDef fin      fill:#27ae60,color:#fff,stroke:#1a7a3e,font-weight:bold
+    classDef etapa    fill:#eef3fb,stroke:#2980b9
+    classDef cambio   fill:#fff3cd,stroke:#f39c12,color:#7d5a00,font-weight:bold
+    classDef decision fill:#f9f9f9,stroke:#999,color:#333
+    classDef ok       fill:#d4edda,stroke:#27ae60,color:#155724
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header orange">🔄 Ciclo de vida en terreno — con VPN activa</div>
+      <div class="card-body">
+        <div class="mermaid">
+sequenceDiagram
+    actor Eq as 💻 Equipo en Faena
+    participant VPN as 🔐 Servidor VPN
+    participant DC as 🏢 Domain Controller
+    actor TI as 👨‍💻 Equipo TI
+
+    Note over Eq: Equipo enciende en faena
+    Eq->>VPN: Conexión VPN automática
+    VPN->>DC: Túnel establecido
+
+    DC->>Eq: ✅ GPO actualizada recibida
+
+    Note over TI: TI publica nueva política<br/>de seguridad en el DC
+
+    TI->>DC: Nueva GPO desplegada
+    DC->>VPN: Política disponible para clientes
+    VPN->>Eq: ✅ Política aplicada remotamente
+
+    Note over Eq: Problema de software detectado
+
+    TI->>DC: Script de remediación vía GPO
+    DC-->>VPN: Push al equipo
+    VPN->>Eq: ✅ Remediación ejecutada<br/>sin retorno físico
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ══════════════════════════════════════════════
+       SECCIÓN 4: INTUNE
+  ══════════════════════════════════════════════ -->
+  <div class="section" id="intune">
+    <span class="section-badge badge-green">Propuesta B</span>
+    <div class="section-title">Microsoft Intune — Gestión Cloud (MDM)</div>
+    <p class="section-sub">
+      Con Intune el proceso cambia radicalmente. El equipo no necesita pasar por la oficina para un setup completo: puede configurarse en cualquier lugar con internet usando Windows Autopilot. Las políticas equivalentes a GPO se aplican desde la nube, sin DC ni VPN especial.
+    </p>
+
+    <div class="alert alert-success">
+      <span>☁️</span>
+      <div><strong>Cambio fundamental:</strong> El equipo ya no se une al dominio on-premise (AD local). En cambio, se une a <strong>Azure Active Directory</strong> vía internet. Las GPO se reemplazan por <strong>Intune Policies</strong> que se aplican desde la nube. El script de setup queda obsoleto — Intune lo reemplaza por completo.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header green">☁️ Proceso con Intune + Windows Autopilot</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart TD
+    A([📦 Equipo nuevo llega]):::inicio --> B
+
+    B["🏭 PRE-REGISTRO\n──────────────────────────\nRegistrar hardware hash\nen portal Intune / Autopilot\nPuede hacerlo el proveedor\nantes del envío"]:::etapa --> C
+
+    C{Destino\ndel equipo?}:::decision
+
+    C -- "🏢 Pasa por oficina" --> E["Encendido en oficina\nConfiguración básica\nOpcional"]:::etapa
+    C -- "🏗️ Va directo a faena" --> D["🚚 Se despacha\nDIRECTAMENTE\na terreno"]:::ok
+
+    D --> F
+    E --> F
+
+    F["🖥️ PRIMER ENCENDIDO\nen cualquier lugar\ncon conexión a internet"]:::etapa --> G
+
+    G["☁️ AUTOPILOT ACTIVA\n───────────────────────\nEquipo detecta perfil Autopilot\nen Azure automáticamente\nDescarga configuración\ncompleta desde la nube"]:::nube --> H
+
+    H["🔐 Join a Azure AD\n───────────────────\nSin DC físico\nSin red corporativa\nSolo internet"]:::nube --> I
+
+    I["📋 Intune aplica todo\n────────────────────────────────────\n✅ Restricción de puertos USB\n✅ Actualizaciones de Windows\n✅ Software corporativo instalado\n✅ BitLocker activado\n✅ Firewall configurado\n✅ Antivirus con reglas\n✅ Microsoft 365 instalado\n✅ Perfil del usuario aplicado"]:::nube --> J
+
+    J([✅ Equipo OPERATIVO en terreno\nCompletamente configurado\ndesde la nube]):::fin --> K
+
+    K["🔄 Gestión continua — Intune Portal\n──────────────────────────────────────\nNueva política → se aplica a TODOS\nlos equipos automáticamente\nSin VPN · Sin retorno · Sin script"]:::ok
+
+    classDef inicio   fill:#1E4D8C,color:#fff,stroke:#0d2d5e,font-weight:bold
+    classDef fin      fill:#27ae60,color:#fff,stroke:#1a7a3e,font-weight:bold
+    classDef etapa    fill:#eef3fb,stroke:#2980b9
+    classDef decision fill:#f9f9f9,stroke:#999,color:#333
+    classDef nube     fill:#e8f5e9,stroke:#27ae60,color:#155724
+    classDef ok       fill:#d4edda,stroke:#27ae60,color:#155724
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header green">🔀 Diferencia de arquitectura: AD On-Premise vs Azure AD + Intune</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart LR
+    subgraph HOY["❌  HOY — Active Directory On-Premise"]
+        direction TB
+        DC1["🏢 Domain Controller\nOficina Central"]
+        Eq1["💻 Equipo en Faena"]
+        DC1 -. "Sin conexión directa" .- Eq1
+        DC1 -- "Solo con retorno físico\no VPN configurada" --> Eq1
+    end
+
+    subgraph INTUNE["✅  CON INTUNE — Azure AD Cloud"]
+        direction TB
+        Az["☁️ Azure AD + Intune\nMicrosoft Cloud"]
+        Eq2["💻 Equipo en Faena"]
+        Az -- "Siempre conectado\nvía HTTPS / internet\nSin VPN especial" --> Eq2
+    end
+
+    style HOY fill:#fff5f5,stroke:#c0392b
+    style INTUNE fill:#f0fff5,stroke:#27ae60
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ══════════════════════════════════════════════
+       SECCIÓN 5: ENCARGADO DE OBRA
+  ══════════════════════════════════════════════ -->
+  <div class="section" id="encargado">
+    <span class="section-badge badge-purple">Propuesta C</span>
+    <div class="section-title">Rol de Encargado de Obra</div>
+    <p class="section-sub">
+      Propuesta organizacional que complementa cualquiera de las anteriores. Crea un rol en el sistema de inventario con acceso limitado para que alguien en terreno pueda gestionar y reportar sin depender completamente del equipo TI central.
+    </p>
+
+    <div class="card">
+      <div class="card-header purple">👷 Flujo de trabajo del Encargado de Obra en el sistema de inventario</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart TD
+    A([👷 Encargado de Obra\naccede al sistema\ndesde terreno]):::inicio --> B
+
+    B{¿Qué necesita\nhacer?}:::decision
+
+    B --> C["📋 Ver inventario\nde SU obra"]
+    B --> D["🚨 Reportar incidencia\npérdida · robo · falla"]
+    B --> E["📝 Firmar acta de\nentrega o devolución"]
+    B --> F["🔍 Consultar estado\nde un equipo"]
+
+    C --> C1["✅ Ve solo los equipos\nde SU Centro de Costo\nno puede ver otros CC"]:::ok
+    D --> D1["✅ Crea incidencia\nTI central es notificado\nauto"]:::ok
+    E --> E1["✅ Firma digital\nen el sistema\nSin papel físico"]:::ok
+    F --> F1["✅ Estado · asignado\núltima mantención"]:::ok
+
+    C1 & D1 & E1 & F1 --> G
+
+    G{¿Requiere\nintervención\nde TI?}:::decision
+    G -- "✅ Solo informativo" --> H["Encargado gestiona\nen el momento\nSin esperar a TI\ncentralizado"]:::ok
+    G -- "🔧 Sí, técnico" --> I["TI recibe notificación\nCoordina solución remota\no envío de reemplazo"]:::warn
+
+    subgraph PERMISOS["🔒 Permisos del rol Encargado de Obra"]
+        P1["✅ Ver equipos de su CC"]
+        P2["✅ Crear y ver incidencias"]
+        P3["✅ Firmar actas de entrega"]
+        P4["❌ Crear / eliminar equipos"]
+        P5["❌ Ver otros Centros de Costo"]
+        P6["❌ Modificar catálogos"]
+        P7["❌ Acceso a configuración"]
+    end
+
+    classDef inicio   fill:#7b2d8b,color:#fff,stroke:#5b1a6b,font-weight:bold
+    classDef decision fill:#f9f9f9,stroke:#999,color:#333
+    classDef ok       fill:#d4edda,stroke:#27ae60,color:#155724
+    classDef warn     fill:#fff3cd,stroke:#f39c12,color:#7d5a00
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header purple">📦 Cierre de obra — hoy vs con Encargado de Obra</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart LR
+    subgraph HOY["❌  HOY — Sin rol definido"]
+        direction TB
+        H1["Obra finaliza"]:::etapa
+        H2["TI coordina recuperación\nsin visibilidad en terreno\nNo sabe cuántos equipos hay"]:::alerta
+        H3["Equipos llegan sin inventario\nAlgunos no llegan\nNadie sabe cuántos faltan"]:::bloqueante
+        H4["TI actualiza a mano\ncon inconsistencias"]:::alerta
+        H1-->H2-->H3-->H4
+    end
+
+    subgraph NUEVO["✅  CON Encargado de Obra"]
+        direction TB
+        N1["Obra finaliza"]:::etapa
+        N2["Encargado marca equipos\ncomo 'en devolución'\nen el sistema desde terreno"]:::ok
+        N3["Genera Acta de Devolución\ndigital con firma electrónica"]:::ok
+        N4["TI recibe alerta con inventario\nexacto ANTES de que lleguen\nlos equipos físicamente"]:::ok
+        N5["✅ Inventario siempre\nconsistente y trazable"]:::ok
+        N1-->N2-->N3-->N4-->N5
+    end
+
+    style HOY fill:#fff5f5,stroke:#c0392b
+    style NUEVO fill:#f0fff5,stroke:#27ae60
+    classDef etapa   fill:#eef3fb,stroke:#2980b9
+    classDef alerta  fill:#fff3cd,stroke:#f39c12,color:#7d5a00
+    classDef bloqueante fill:#fde8e8,stroke:#c0392b,color:#7b0000
+    classDef ok fill:#d4edda,stroke:#27ae60,color:#155724
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ══════════════════════════════════════════════
+       SECCIÓN 6: COMPARACIÓN
+  ══════════════════════════════════════════════ -->
+  <div class="section" id="comparacion">
+    <span class="section-badge badge-blue">Comparación</span>
+    <div class="section-title">Comparación y Roadmap</div>
+    <p class="section-sub">
+      Las tres propuestas son complementarias, no excluyentes. El Encargado de Obra puede arrancar esta semana. VPN + GPO resuelve el corto plazo técnico. Intune es la apuesta de largo plazo cuando la empresa adopte M365 E3 o superior.
+    </p>
+
+    <div class="compare-grid">
+      <div class="ccard blue">
+        <span class="ctag" style="background:#dbeafe;color:#1e40af;">🔐 Propuesta A</span>
+        <h3>VPN + GPO Remota</h3>
+        <ul>
+          <li>Compatible con AD existente</li>
+          <li>Sin licencias nuevas</li>
+          <li>Cambio mínimo al proceso</li>
+          <li>Requiere internet en faena</li>
+          <li>No resuelve re-setup en terreno</li>
+          <li>Necesita excepción en antivirus</li>
+        </ul>
+      </div>
+      <div class="ccard green">
+        <span class="ctag" style="background:#dcfce7;color:#15803d;">☁️ Propuesta B</span>
+        <h3>Microsoft Intune</h3>
+        <ul>
+          <li>Setup desde cualquier lugar</li>
+          <li>Sin VPN especial requerida</li>
+          <li>Gestión de móviles incluida</li>
+          <li>Script de setup reemplazado</li>
+          <li>Costo de licencia M365 E3</li>
+          <li>Requiere migración a Azure AD</li>
+        </ul>
+      </div>
+      <div class="ccard purple">
+        <span class="ctag" style="background:#f3e8ff;color:#7e22ce;">👷 Propuesta C</span>
+        <h3>Encargado de Obra</h3>
+        <ul>
+          <li>Implementación inmediata</li>
+          <li>Sin costo adicional</li>
+          <li>Cierre de obra trazable</li>
+          <li>Complementa A y B</li>
+          <li>Requiere cambios en sistema</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header blue">🗓️ Roadmap de implementación recomendado por fases</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart LR
+    subgraph F1["⚡ FASE 1 — Inmediata (esta semana)"]
+        direction TB
+        A1["👷 Definir rol\nEncargado de Obra"]:::ok
+        A2["💻 Implementar rol\nen sistema inventario"]:::ok
+        A3["🏗️ Piloto en\nobra activa"]:::ok
+        A1-->A2-->A3
+    end
+
+    subgraph F2["📅 FASE 2 — Corto plazo (30-60 días)"]
+        direction TB
+        B1["🔐 Agregar cliente VPN\nal script de setup"]:::warn
+        B2["🛡️ Configurar excepción\nVPN en antivirus"]:::warn
+        B3["🖥️ Desplegar servidor VPN\noficina central"]:::warn
+        B4["✅ Rollout equipos nuevos\ncon VPN incluida"]:::warn
+        B1-->B2-->B3-->B4
+    end
+
+    subgraph F3["🔭 FASE 3 — Largo plazo (6-12 meses)"]
+        direction TB
+        C1["💰 Evaluar licencias\nM365 E3"]:::future
+        C2["☁️ Piloto Intune\n5 equipos"]:::future
+        C3["🚀 Migración\nprogresiva"]:::future
+        C1-->C2-->C3
+    end
+
+    F1 --> F2 --> F3
+
+    style F1 fill:#f0fff5,stroke:#27ae60
+    style F2 fill:#fff8f0,stroke:#f39c12
+    style F3 fill:#f0f5ff,stroke:#2980b9
+    classDef ok     fill:#d4edda,stroke:#27ae60,color:#155724
+    classDef warn   fill:#fff3cd,stroke:#f39c12,color:#7d5a00
+    classDef future fill:#e8f0fb,stroke:#2980b9,color:#1a4d75
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header blue">🔄 Transformación completa del proceso: Hoy vs Futuro</div>
+      <div class="card-body">
+        <div class="mermaid">
+flowchart TD
+    subgraph HOY["❌  PROCESO HOY"]
+        direction LR
+        H1["Equipo llega"]-->H2["Formateo manual"]-->H3["Script + AD manual"]-->H4["Join dominio\nen oficina"]-->H5["Despacho"]-->H6["Faena\nDesconectada\nGPO fija"]-->H7["Problema\n↓\nRetorno físico\n2-5 días"]
+    end
+
+    subgraph FUTURO["✅  PROCESO FUTURO (Fases 1+2+3)"]
+        direction LR
+        F1["Equipo llega\no va directo"]-->F2["Registro\nautopilot"]-->F3["Script mejorado\n+ VPN client\n+ Excepción AV"]-->F4["Join remoto\no Azure AD"]-->F5["Despacho\no directo"]-->F6["Faena\nConectada\nGPO en vivo"]-->F7["Problema\n↓\nRemediación\nremota\nSin retorno"]
+    end
+
+    style HOY fill:#fff5f5,stroke:#c0392b
+    style FUTURO fill:#f0fff5,stroke:#27ae60
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#eef3fb',
+      primaryTextColor: '#1a1a2e',
+      primaryBorderColor: '#2980b9',
+      lineColor: '#4a7eb5',
+      secondaryColor: '#f0f4f8',
+      tertiaryColor: '#ffffff',
+      fontSize: '14px'
+    },
+    flowchart: { curve: 'basis', padding: 20, htmlLabels: true },
+    sequence: { mirrorActors: false, wrap: true, width: 200 }
+  });
+</script>
+</body>
+</html>

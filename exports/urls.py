@@ -1,8 +1,8 @@
 from django.urls import path
 
 from .views import (
-    ExportLaptopsExcelView,
-    ExportLaptopsPDFView,
+    ExportComputadoresExcelView,
+    ExportComputadoresPDFView,
     ExportCelularesExcelView,
     ExportCelularesPDFView,
     ExportHistorialExcelView,
@@ -10,9 +10,9 @@ from .views import (
 )
 
 urlpatterns = [
-    # Laptops
-    path('laptops/excel/', ExportLaptopsExcelView.as_view(), name='export-laptops-excel'),
-    path('laptops/pdf/', ExportLaptopsPDFView.as_view(), name='export-laptops-pdf'),
+    # Computadores
+    path('computadores/excel/', ExportComputadoresExcelView.as_view(), name='export-computadores-excel'),
+    path('computadores/pdf/', ExportComputadoresPDFView.as_view(), name='export-computadores-pdf'),
 
     # Celulares
     path('celulares/excel/', ExportCelularesExcelView.as_view(), name='export-celulares-excel'),

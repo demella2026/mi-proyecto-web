@@ -8,8 +8,9 @@ services:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # Puerto solo accesible internamente entre contenedores (sin expose al host)
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U inventario_user -d inventario_db"]
       interval: 5s
@@ -23,15 +24,17 @@ services:
     env_file:
       - .env
     environment:
-      - POSTGRES_HOST=db  # Sobrescribimos localhost por 'db' dentro de Docker
-    ports:
-      - "8000:8000"
+      - POSTGRES_HOST=db
+    # Sin expose al host — nginx es el único punto de entrada
+    expose:
+      - "8000"
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - static_files:/app/staticfiles
-      - .:/app  # ESTO ES NUEVO: Sincroniza tu código local con el contenedor
+      - media_files:/app/media
+      - .:/app
 
   frontend:
     build:
@@ -39,11 +42,27 @@ services:
       dockerfile: Dockerfile
     container_name: inventario_frontend
     restart: unless-stopped
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
+      - web
+
+  # ── Reverse Proxy con SSL ──────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: inventario_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"      # Redirige a HTTPS
+      - "443:443"    # HTTPS con SSL
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro    # Certificados mkcert
+    depends_on:
+      - frontend
       - web
 
 volumes:
   postgres_data:
   static_files:
+  media_files:

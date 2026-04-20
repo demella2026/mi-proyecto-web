@@ -45,9 +45,11 @@ def _styles():
 
 
 STATUS_COLOR_MAP = {
-    'ACTIVO': colors.HexColor('#C6EFCE'),
+    'EN_USO': colors.HexColor('#C6EFCE'),
+    'EN_BODEGA': colors.HexColor('#BDD7EE'),
     'EN_REPARACION': colors.HexColor('#FFEB9C'),
-    'BAJA': colors.HexColor('#FFC7CE'),
+    'PENDIENTE_DEVOLUCION': colors.HexColor('#FCE4D6'),
+    'DE_BAJA': colors.HexColor('#FFC7CE'),
 }
 
 ACCION_COLOR_MAP = {
@@ -75,20 +77,20 @@ def _build_table_style(header_rows=1):
     ])
 
 
-def _resumen_paragraph(ss, total, activos, reparacion, baja):
+def _resumen_paragraph(ss, total, en_uso, reparacion, de_baja):
     text = (
         f"<b>Total:</b> {total} &nbsp;&nbsp;|&nbsp;&nbsp; "
-        f"<b>Activos:</b> {activos} &nbsp;&nbsp;|&nbsp;&nbsp; "
-        f"<b>En reparación:</b> {reparacion} &nbsp;&nbsp;|&nbsp;&nbsp; "
-        f"<b>De baja:</b> {baja}"
+        f"<b>En uso:</b> {en_uso} &nbsp;&nbsp;|&nbsp;&nbsp; "
+        f"<b>En reparacion:</b> {reparacion} &nbsp;&nbsp;|&nbsp;&nbsp; "
+        f"<b>De baja:</b> {de_baja}"
     )
     return Paragraph(text, ss['Normal'])
 
 
 # ======================================================================
-# Laptops
+# Computadores
 # ======================================================================
-def generar_pdf_laptops(laptops):
+def generar_pdf_computadores(computadores):
     buf = BytesIO()
     doc = SimpleDocTemplate(
         buf,
@@ -101,43 +103,49 @@ def generar_pdf_laptops(laptops):
     ss = _styles()
     elements = []
 
-    elements.append(Paragraph('Inventario de Laptops', ss['TituloReporte']))
+    elements.append(Paragraph('Inventario de Computadores', ss['TituloReporte']))
     elements.append(Paragraph(
         f'Generado el {datetime.now():%d/%m/%Y %H:%M}',
         ss['Subtitulo'],
     ))
 
-    laptops_list = list(laptops)
-    activos = sum(1 for l in laptops_list if l.estado == 'ACTIVO')
-    reparacion = sum(1 for l in laptops_list if l.estado == 'EN_REPARACION')
-    baja = sum(1 for l in laptops_list if l.estado == 'BAJA')
-    elements.append(_resumen_paragraph(ss, len(laptops_list), activos, reparacion, baja))
+    eq_list = list(computadores)
+    en_uso = sum(1 for e in eq_list if e.estado == 'EN_USO')
+    reparacion = sum(1 for e in eq_list if e.estado == 'EN_REPARACION')
+    de_baja = sum(1 for e in eq_list if e.estado == 'DE_BAJA')
+    elements.append(_resumen_paragraph(ss, len(eq_list), en_uso, reparacion, de_baja))
     elements.append(Spacer(1, 12))
 
-    headers = ['#', 'N° Serie', 'Marca', 'Modelo', 'Procesador', 'RAM', 'Almac.', 'Estado', 'Fecha']
+    headers = [
+        '#', 'N Inv.', 'N Serie', 'Tipo', 'Marca', 'Modelo',
+        'Procesador', 'RAM', 'Almac.', 'S.O.', 'Estado', 'Fecha',
+    ]
     data = [headers]
 
-    for idx, laptop in enumerate(laptops_list, 1):
+    for idx, eq in enumerate(eq_list, 1):
         data.append([
             str(idx),
-            laptop.numero_serie,
-            str(laptop.modelo.marca) if laptop.modelo and hasattr(laptop.modelo, 'marca') else '',
-            str(laptop.modelo) if laptop.modelo else '',
-            str(laptop.procesador) if hasattr(laptop, 'procesador') and laptop.procesador else '',
-            str(laptop.ram) if laptop.ram else '',
-            str(laptop.almacenamiento) if laptop.almacenamiento else '',
-            laptop.get_estado_display() if hasattr(laptop, 'get_estado_display') else laptop.estado,
-            laptop.fecha_ingreso.strftime('%d/%m/%Y') if hasattr(laptop, 'fecha_ingreso') and laptop.fecha_ingreso else '',
+            eq.numero_inventario,
+            eq.numero_serie,
+            eq.get_tipo_equipo_display(),
+            str(eq.marca),
+            eq.modelo.nombre if eq.modelo else '',
+            str(eq.procesador) if eq.procesador else '',
+            str(eq.ram) if eq.ram else '',
+            str(eq.almacenamiento) if eq.almacenamiento else '',
+            str(eq.sistema_operativo) if eq.sistema_operativo else '',
+            eq.get_estado_display(),
+            eq.fecha_ingreso.strftime('%d/%m/%Y') if eq.fecha_ingreso else '',
         ])
 
-    col_widths = [30, 90, 70, 90, 90, 60, 70, 80, 70]
+    col_widths = [25, 60, 70, 55, 55, 70, 70, 50, 55, 70, 60, 55]
     table = Table(data, colWidths=col_widths, repeatRows=1)
     style = _build_table_style()
 
-    for i, laptop in enumerate(laptops_list, 1):
-        color = STATUS_COLOR_MAP.get(laptop.estado)
+    for i, eq in enumerate(eq_list, 1):
+        color = STATUS_COLOR_MAP.get(eq.estado)
         if color:
-            style.add('BACKGROUND', (7, i), (7, i), color)
+            style.add('BACKGROUND', (10, i), (10, i), color)
 
     table.setStyle(style)
     elements.append(table)
@@ -169,37 +177,42 @@ def generar_pdf_celulares(celulares):
         ss['Subtitulo'],
     ))
 
-    celulares_list = list(celulares)
-    activos = sum(1 for c in celulares_list if c.estado == 'ACTIVO')
-    reparacion = sum(1 for c in celulares_list if c.estado == 'EN_REPARACION')
-    baja = sum(1 for c in celulares_list if c.estado == 'BAJA')
-    elements.append(_resumen_paragraph(ss, len(celulares_list), activos, reparacion, baja))
+    cel_list = list(celulares)
+    en_uso = sum(1 for c in cel_list if c.estado == 'EN_USO')
+    reparacion = sum(1 for c in cel_list if c.estado == 'EN_REPARACION')
+    de_baja = sum(1 for c in cel_list if c.estado == 'DE_BAJA')
+    elements.append(_resumen_paragraph(ss, len(cel_list), en_uso, reparacion, de_baja))
     elements.append(Spacer(1, 12))
 
-    headers = ['#', 'N° Serie', 'IMEI', 'Marca', 'Modelo', 'RAM', 'Almac.', 'Estado', 'Fecha']
+    headers = [
+        '#', 'N Linea', 'IMEI', 'N Serie', 'Tipo', 'Marca', 'Modelo',
+        'RAM', 'Almac.', 'Estado', 'Fecha',
+    ]
     data = [headers]
 
-    for idx, cel in enumerate(celulares_list, 1):
+    for idx, cel in enumerate(cel_list, 1):
         data.append([
             str(idx),
-            cel.numero_serie,
-            cel.imei if hasattr(cel, 'imei') else '',
-            str(cel.modelo.marca) if cel.modelo and hasattr(cel.modelo, 'marca') else '',
-            str(cel.modelo) if cel.modelo else '',
+            cel.numero_linea or '',
+            cel.imei or '',
+            cel.numero_serie or '',
+            cel.get_tipo_equipo_display(),
+            str(cel.marca),
+            cel.modelo.nombre if cel.modelo else '',
             str(cel.ram) if cel.ram else '',
             str(cel.almacenamiento) if cel.almacenamiento else '',
-            cel.get_estado_display() if hasattr(cel, 'get_estado_display') else cel.estado,
-            cel.fecha_ingreso.strftime('%d/%m/%Y') if hasattr(cel, 'fecha_ingreso') and cel.fecha_ingreso else '',
+            cel.get_estado_display(),
+            cel.fecha_ingreso.strftime('%d/%m/%Y') if cel.fecha_ingreso else '',
         ])
 
-    col_widths = [30, 90, 100, 70, 80, 60, 70, 80, 70]
+    col_widths = [25, 70, 85, 70, 60, 55, 70, 50, 55, 65, 55]
     table = Table(data, colWidths=col_widths, repeatRows=1)
     style = _build_table_style()
 
-    for i, cel in enumerate(celulares_list, 1):
+    for i, cel in enumerate(cel_list, 1):
         color = STATUS_COLOR_MAP.get(cel.estado)
         if color:
-            style.add('BACKGROUND', (7, i), (7, i), color)
+            style.add('BACKGROUND', (9, i), (9, i), color)
 
     table.setStyle(style)
     elements.append(table)
@@ -232,7 +245,7 @@ def generar_pdf_historial(registros):
     ))
     elements.append(Spacer(1, 12))
 
-    headers = ['#', 'Fecha', 'Equipo', 'ID', 'Acción', 'Campo', 'Anterior', 'Nuevo', 'Usuario']
+    headers = ['#', 'Fecha', 'Equipo', 'ID', 'Accion', 'Campo', 'Anterior', 'Nuevo', 'Usuario']
     data = [headers]
 
     registros_list = list(registros)

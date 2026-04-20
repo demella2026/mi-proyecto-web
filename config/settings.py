@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,9 @@ INSTALLED_APPS = [
     "inventory",
     "auditlog",
     "exports",
-    
+    "mantenimiento",
+    "actas",
+    "ldapsync",
 ]
 
 MIDDLEWARE = [
@@ -106,8 +109,70 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME":  timedelta(hours=8),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS":  True,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ═══════════════════════════════════════════════
+#  MEDIA FILES (PDFs de actas, archivos de mantenimiento)
+# ═══════════════════════════════════════════════
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# ═══════════════════════════════════════════════
+#  EMAIL — Envio de Actas de Entrega
+# ═══════════════════════════════════════════════
+# Para habilitar el envio de actas por email, configura en .env:
+#   EMAIL_HOST_USER=tucuenta@gmail.com
+#   EMAIL_HOST_PASSWORD=xxxx xxxx xxxx xxxx   (App Password de Google)
+#   EMAIL_FROM_NAME=Inventario TI Elecnor
+# Para generar un App Password en Google:
+#   1. Ir a myaccount.google.com > Seguridad > Verificacion en 2 pasos
+#   2. Al final de esa pagina: "Contrasenas de aplicaciones"
+#   3. Crear una para "Correo / Otro (nombre personalizado)"
+
+EMAIL_BACKEND    = config("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST       = config("EMAIL_HOST",    default="smtp.gmail.com")
+EMAIL_PORT       = config("EMAIL_PORT",    default=587, cast=int)
+EMAIL_USE_TLS    = config("EMAIL_USE_TLS", default=True, cast=bool)
+EMAIL_HOST_USER  = config("EMAIL_HOST_USER",  default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+EMAIL_FROM_NAME  = config("EMAIL_FROM_NAME", default="Inventario TI")
+DEFAULT_FROM_EMAIL = f"{EMAIL_FROM_NAME} <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else "noreply@inventario.local"
+
+# Destinatarios de notificaciones automáticas de solicitudes de correo.
+# Puede ser un string (un solo correo) o una lista separada por comas en .env.
+_ti_emails_raw = config("TI_EMAIL_NOTIFICACIONES", default="")
+TI_EMAIL_NOTIFICACIONES = [e.strip() for e in _ti_emails_raw.split(",") if e.strip()]
+
+# ═══════════════════════════════════════════════
+#  LDAP / Active Directory (Opcional)
+# ═══════════════════════════════════════════════
+# Para habilitar autenticacion LDAP, configura las variables de entorno:
+#   LDAP_SERVER_URI, LDAP_BIND_DN, LDAP_BIND_PASSWORD, etc.
+# y descomenta la siguiente linea:
+# from ldapsync.ldap_config import *  # noqa: F401,F403
+
+LDAP_ENABLED = config("LDAP_ENABLED", default=False, cast=bool)
+if LDAP_ENABLED:
+    try:
+        from ldapsync.ldap_config import *  # noqa: F401,F403
+        AUTHENTICATION_BACKENDS = AUTHENTICATION_BACKENDS_LDAP  # noqa: F405
+    except ImportError:
+        pass  # python-ldap no instalado; autenticacion LDAP deshabilitada

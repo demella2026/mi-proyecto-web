@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Perfil VPN FortiClient 7.4 - Elecnor Chile
+    ============================================
+    Servidor FortiGate: 186.67.93.174:443
+
+    Cómo importar este archivo:
+    FCConfig.exe -m vpn -f "elecnor_vpn_config.xml" -o import -norestart
+    (Ver script install_forti_vpn.ps1 para importación automática)
+-->
+<forticlient_configuration>
+  <vpn>
+    <sslvpn>
+      <connections>
+        <connection>
+          <!-- Nombre que aparecerá en la lista del cliente VPN -->
+          <name>Elecnor Corporativa</name>
+
+          <!-- IP:PUERTO del FortiGate -->
+          <server>186.67.93.174:443</server>
+
+          <!-- 0 = ignorar advertencia de certificado (útil si FortiGate usa cert. autofirmado) -->
+          <!-- 1 = mostrar advertencia (recomendado si tienen cert. firmado por CA) -->
+          <warn_invalid_server_certificate>0</warn_invalid_server_certificate>
+
+          <!-- Permite que el usuario guarde su contraseña localmente -->
+          <show_remember_password>1</show_remember_password>
+
+          <!-- 0 = el usuario debe conectar manualmente -->
+          <!-- 1 = conectar automáticamente al iniciar Windows (requiere EMS) -->
+          <auto_connect>0</auto_connect>
+
+          <!-- No usar navegador externo para autenticación SAML -->
+          <use_external_browser>0</use_external_browser>
+
+          <!-- Descripción visible en el cliente -->
+          <description>VPN Corporativa Elecnor Chile - SSL VPN</description>
+        </connection>
+      </connections>
+
+      <!-- Mostrar ícono en bandeja del sistema -->
+      <show_vpn_icon>1</show_vpn_icon>
+    </sslvpn>
+  </vpn>
+</forticlient_configuration>

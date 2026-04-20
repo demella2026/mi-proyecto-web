@@ -10,3 +10,10 @@ psycopg[binary]
 gunicorn==22.0.0
 django-simple-history==3.7.0
 whitenoise==6.7.0
+# LDAP / Active Directory (instalar solo si se necesita autenticacion AD)
+python-ldap==3.4.4
+django-auth-ldap==4.8.0
+# Tareas asincronas (para sincronizacion nocturna LDAP)
+celery==5.4.0
+django-celery-beat==2.7.0
+redis==5.2.1

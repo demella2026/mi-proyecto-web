@@ -4,19 +4,28 @@ import Modal from "../components/Modal";
 import api, { downloadBlob } from "../api";
 
 const ESTADOS = [
-  { value: "activo", label: "Activo" },
-  { value: "en_reparacion", label: "En Reparación" },
-  { value: "de_baja", label: "De Baja" },
+  { value: "EN_USO", label: "En Uso" },
+  { value: "EN_BODEGA", label: "En Bodega" },
+  { value: "EN_REPARACION", label: "En Reparacion" },
+  { value: "PENDIENTE_DEVOLUCION", label: "Pendiente Devolucion" },
+  { value: "DE_BAJA", label: "De Baja" },
+];
+const TIPOS = [
+  { value: "SMARTPHONE", label: "Smartphone" },
+  { value: "TABLET", label: "Tablet" },
 ];
 const BADGE = {
-  activo: "bg-green-100 text-green-800",
-  en_reparacion: "bg-yellow-100 text-yellow-800",
-  de_baja: "bg-red-100 text-red-800",
+  EN_USO: "bg-green-100 text-green-800",
+  EN_BODEGA: "bg-blue-100 text-blue-800",
+  EN_REPARACION: "bg-yellow-100 text-yellow-800",
+  PENDIENTE_DEVOLUCION: "bg-orange-100 text-orange-800",
+  DE_BAJA: "bg-red-100 text-red-800",
 };
 
 const empty = () => ({
-  imei: "", numero_serie: "", marca: "", modelo: "",
-  ram: "", almacenamiento: "", estado: "activo", empleado_asignado: "", notas: "",
+  numero_linea: "", imei: "", tipo_equipo: "SMARTPHONE",
+  marca: "", modelo: "", ram: "", almacenamiento: "",
+  estado: "EN_BODEGA", empleado_asignado: "", notas: "",
 });
 
 export default function Celulares() {
@@ -52,20 +61,25 @@ export default function Celulares() {
 
   useEffect(() => { fetch_(); }, [fetch_]);
   useEffect(() => {
-    Promise.all([api.getMarcas(), api.getModelos(), api.getRam(), api.getAlmacenamientos(), api.getEmpleados()])
-      .then(([m, mo, r, a, e]) => {
-        setMarcas(m); setModelos(mo); setRams(r);
-        setAlmacenamientos(a); setEmpleados(e.filter((x) => x.activo));
-      });
+    Promise.all([
+      api.getMarcasPorTipo("CELULAR"),
+      api.getModelosPorTipo("CELULAR"),
+      api.getRam(), api.getAlmacenamientos(), api.getEmpleados(),
+    ]).then(([m, mo, r, a, e]) => {
+      setMarcas(m); setModelos(mo); setRams(r);
+      setAlmacenamientos(a); setEmpleados(e.filter((x) => x.activo));
+    });
   }, []);
 
   const openCreate = () => { setEditId(null); setForm(empty()); setErrors({}); setModal(true); };
   const openEdit = (cl) => {
     setEditId(cl.id);
     setForm({
-      imei: cl.imei, numero_serie: cl.numero_serie,
-      marca: cl.marca.id, modelo: cl.modelo.id,
-      ram: cl.ram.id, almacenamiento: cl.almacenamiento.id,
+      numero_linea: cl.numero_linea || "",
+      imei: cl.imei || "",
+      tipo_equipo: cl.tipo_equipo || "SMARTPHONE",
+      marca: cl.marca?.id || "", modelo: cl.modelo?.id || "",
+      ram: cl.ram?.id || "", almacenamiento: cl.almacenamiento?.id || "",
       estado: cl.estado, empleado_asignado: cl.empleado_asignado?.id || "",
       notas: cl.notas || "",
     });
@@ -76,6 +90,11 @@ export default function Celulares() {
     e.preventDefault(); setErrors({});
     const payload = { ...form };
     if (!payload.empleado_asignado) payload.empleado_asignado = null;
+    if (!payload.ram) payload.ram = null;
+    if (!payload.almacenamiento) payload.almacenamiento = null;
+    if (!payload.numero_linea) payload.numero_linea = null;
+    if (!payload.imei) payload.imei = null;
+    delete payload.numero_serie;
     try {
       editId ? await api.updateCelular(editId, payload) : await api.createCelular(payload);
       setModal(false); fetch_();
@@ -92,14 +111,16 @@ export default function Celulares() {
     setHistData(await api.celularHistorial(id).catch(() => []));
   };
 
-  const filteredModelos = form.marca ? modelos.filter((m) => m.marca === Number(form.marca)) : modelos;
+  const filteredModelos = modelos
+    .filter((m) => m.tipo_equipo === "CELULAR")
+    .filter((m) => !form.marca || m.marca === Number(form.marca));
 
   const Sel = ({ label, name, options, display, required }) => (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}{required && " *"}</label>
       <select value={form[name]} onChange={(e) => setForm({ ...form, [name]: e.target.value })}
         className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" required={required}>
-        <option value="">Seleccionar…</option>
+        <option value="">Seleccionar...</option>
         {options.map((o) => <option key={o.id} value={o.id}>{display(o)}</option>)}
       </select>
       {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name]}</p>}
@@ -129,7 +150,7 @@ export default function Celulares() {
       <div className="bg-white rounded-xl shadow-sm border p-4 mb-6 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input type="text" placeholder="Buscar por IMEI, N° serie…" value={search}
+          <input type="text" placeholder="Buscar por linea, IMEI, N serie..." value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
         </div>
@@ -144,11 +165,10 @@ export default function Celulares() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
+                <th className="text-left px-4 py-3 font-semibold text-gray-600">N Linea</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-600">IMEI</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">N° Serie</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Marca / Modelo</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-600 hidden lg:table-cell">RAM</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600 hidden lg:table-cell">Disco</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Estado</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-600 hidden md:table-cell">Asignado a</th>
                 <th className="text-right px-4 py-3 font-semibold text-gray-600">Acciones</th>
@@ -156,25 +176,24 @@ export default function Celulares() {
             </thead>
             <tbody className="divide-y">
               {loading ? (
-                <tr><td colSpan={8} className="text-center py-8 text-gray-500">Cargando…</td></tr>
+                <tr><td colSpan={8} className="text-center py-8 text-gray-500">Cargando...</td></tr>
               ) : rows.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-8 text-gray-500">Sin resultados</td></tr>
               ) : rows.map((cl) => (
                 <tr key={cl.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-mono text-xs">{cl.imei}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{cl.numero_serie}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{cl.numero_linea || "-"}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{cl.imei || "-"}</td>
                   <td className="px-4 py-3">
-                    <div className="font-medium">{cl.marca.nombre}</div>
-                    <div className="text-gray-500 text-xs">{cl.modelo.nombre}</div>
+                    <div className="font-medium">{cl.marca?.nombre}</div>
+                    <div className="text-gray-500 text-xs">{cl.modelo?.nombre}</div>
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-gray-600">{cl.ram.capacidad}</td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-gray-600">{cl.almacenamiento.capacidad}</td>
+                  <td className="px-4 py-3 hidden lg:table-cell text-gray-600">{cl.ram?.capacidad || "-"}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${BADGE[cl.estado]}`}>{cl.estado_display}</span>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {cl.empleado_asignado
-                      ? <><div className="text-xs font-medium">{cl.empleado_asignado.nombre}</div><div className="text-xs text-gray-400">{cl.empleado_asignado.area_nombre}</div></>
+                      ? <><div className="text-xs font-medium">{cl.empleado_asignado.nombre_completo}</div><div className="text-xs text-gray-400">{cl.empleado_asignado.area_nombre}</div></>
                       : <span className="text-xs text-gray-400">Sin asignar</span>}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -191,26 +210,32 @@ export default function Celulares() {
         </div>
       </div>
 
-      {/* Modal Crear/Editar */}
       <Modal open={modal} onClose={() => setModal(false)} title={editId ? "Editar Celular" : "Nuevo Celular"} wide>
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">IMEI *</label>
-              <input type="text" required value={form.imei} onChange={(e) => setForm({ ...form, imei: e.target.value })}
+              <label className="block text-sm font-medium text-gray-700 mb-1">N Linea</label>
+              <input type="text" value={form.numero_linea} onChange={(e) => setForm({ ...form, numero_linea: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+              {errors.numero_linea && <p className="text-red-500 text-xs mt-1">{errors.numero_linea}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">IMEI</label>
+              <input type="text" value={form.imei} onChange={(e) => setForm({ ...form, imei: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
               {errors.imei && <p className="text-red-500 text-xs mt-1">{errors.imei}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">N° Serie *</label>
-              <input type="text" required value={form.numero_serie} onChange={(e) => setForm({ ...form, numero_serie: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
-              {errors.numero_serie && <p className="text-red-500 text-xs mt-1">{errors.numero_serie}</p>}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+              <select value={form.tipo_equipo} onChange={(e) => setForm({ ...form, tipo_equipo: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                {TIPOS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
             </div>
             <Sel label="Marca" name="marca" options={marcas} display={(o) => o.nombre} required />
             <Sel label="Modelo" name="modelo" options={filteredModelos} display={(o) => o.nombre} required />
-            <Sel label="RAM" name="ram" options={rams} display={(o) => o.capacidad} required />
-            <Sel label="Almacenamiento" name="almacenamiento" options={almacenamientos} display={(o) => o.capacidad} required />
+            <Sel label="RAM" name="ram" options={rams} display={(o) => o.capacidad} />
+            <Sel label="Almacenamiento" name="almacenamiento" options={almacenamientos} display={(o) => `${o.capacidad} ${o.tipo || ""}`} />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
               <select value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })}
@@ -218,7 +243,7 @@ export default function Celulares() {
                 {ESTADOS.map((e) => <option key={e.value} value={e.value}>{e.label}</option>)}
               </select>
             </div>
-            <Sel label="Asignar a empleado" name="empleado_asignado" options={empleados} display={(o) => `${o.nombre} — ${o.area_nombre}`} />
+            <Sel label="Asignar a empleado" name="empleado_asignado" options={empleados} display={(o) => `${o.nombre_completo} — ${o.area_nombre}`} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Notas</label>
@@ -232,8 +257,8 @@ export default function Celulares() {
         </form>
       </Modal>
 
-      <Modal open={!!delId} onClose={() => setDelId(null)} title="Confirmar Eliminación">
-        <p className="text-gray-600 mb-6">¿Estás seguro de eliminar este celular?</p>
+      <Modal open={!!delId} onClose={() => setDelId(null)} title="Confirmar Eliminacion">
+        <p className="text-gray-600 mb-6">Estas seguro de eliminar este celular?</p>
         <div className="flex justify-end gap-3">
           <button onClick={() => setDelId(null)} className="px-4 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200">Cancelar</button>
           <button onClick={confirmDelete} className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700">Eliminar</button>
@@ -254,7 +279,7 @@ export default function Celulares() {
                   {r.cambios?.map((c, j) => (
                     <div key={j} className="text-xs bg-gray-50 rounded p-2 mb-1">
                       <span className="font-medium">{c.campo}: </span>
-                      <span className="text-red-500 line-through">{c.anterior}</span>{" → "}
+                      <span className="text-red-500 line-through">{c.anterior}</span>{" -> "}
                       <span className="text-green-600">{c.nuevo}</span>
                     </div>
                   ))}

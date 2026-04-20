@@ -3,16 +3,16 @@ from datetime import datetime
 from django.http import HttpResponse
 from rest_framework.views import APIView
 
-from inventory.models import Laptop, Celular
+from inventory.models import Computador, Celular, Monitor
 from auditlog.models import RegistroCambio
 
 from .utils_excel import (
-    generar_excel_laptops,
+    generar_excel_computadores,
     generar_excel_celulares,
     generar_excel_historial,
 )
 from .utils_pdf import (
-    generar_pdf_laptops,
+    generar_pdf_computadores,
     generar_pdf_celulares,
     generar_pdf_historial,
 )
@@ -23,14 +23,14 @@ PDF_CONTENT_TYPE = 'application/pdf'
 
 
 def _filtrar_equipos(request, queryset):
-    """Aplica filtros comunes a laptops y celulares."""
+    """Aplica filtros comunes a computadores, celulares y monitores."""
     estado = request.query_params.get('estado')
     if estado:
         queryset = queryset.filter(estado=estado.upper())
 
     marca = request.query_params.get('marca')
     if marca:
-        queryset = queryset.filter(modelo__marca__nombre__icontains=marca)
+        queryset = queryset.filter(marca__nombre__icontains=marca)
 
     fecha_desde = request.query_params.get('fecha_desde')
     if fecha_desde:
@@ -73,29 +73,31 @@ def _timestamp():
 
 
 # ======================================================================
-# LAPTOPS
+# COMPUTADORES
 # ======================================================================
-class ExportLaptopsExcelView(APIView):
+class ExportComputadoresExcelView(APIView):
     def get(self, request):
-        qs = Laptop.objects.select_related(
-            'modelo', 'modelo__marca', 'procesador', 'ram', 'almacenamiento',
+        qs = Computador.objects.select_related(
+            'marca', 'modelo', 'modelo__marca', 'procesador',
+            'ram', 'almacenamiento', 'sistema_operativo',
         ).all()
         qs = _filtrar_equipos(request, qs)
-        buf = generar_excel_laptops(qs)
+        buf = generar_excel_computadores(qs)
         response = HttpResponse(buf.getvalue(), content_type=EXCEL_CONTENT_TYPE)
-        response['Content-Disposition'] = f'attachment; filename="laptops_{_timestamp()}.xlsx"'
+        response['Content-Disposition'] = f'attachment; filename="computadores_{_timestamp()}.xlsx"'
         return response
 
 
-class ExportLaptopsPDFView(APIView):
+class ExportComputadoresPDFView(APIView):
     def get(self, request):
-        qs = Laptop.objects.select_related(
-            'modelo', 'modelo__marca', 'procesador', 'ram', 'almacenamiento',
+        qs = Computador.objects.select_related(
+            'marca', 'modelo', 'modelo__marca', 'procesador',
+            'ram', 'almacenamiento', 'sistema_operativo',
         ).all()
         qs = _filtrar_equipos(request, qs)
-        buf = generar_pdf_laptops(qs)
+        buf = generar_pdf_computadores(qs)
         response = HttpResponse(buf.getvalue(), content_type=PDF_CONTENT_TYPE)
-        response['Content-Disposition'] = f'attachment; filename="laptops_{_timestamp()}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="computadores_{_timestamp()}.pdf"'
         return response
 
 
@@ -105,7 +107,7 @@ class ExportLaptopsPDFView(APIView):
 class ExportCelularesExcelView(APIView):
     def get(self, request):
         qs = Celular.objects.select_related(
-            'modelo', 'modelo__marca', 'ram', 'almacenamiento',
+            'marca', 'modelo', 'modelo__marca', 'ram', 'almacenamiento',
         ).all()
         qs = _filtrar_equipos(request, qs)
         buf = generar_excel_celulares(qs)
@@ -117,7 +119,7 @@ class ExportCelularesExcelView(APIView):
 class ExportCelularesPDFView(APIView):
     def get(self, request):
         qs = Celular.objects.select_related(
-            'modelo', 'modelo__marca', 'ram', 'almacenamiento',
+            'marca', 'modelo', 'modelo__marca', 'ram', 'almacenamiento',
         ).all()
         qs = _filtrar_equipos(request, qs)
         buf = generar_pdf_celulares(qs)

@@ -17,3 +17,11 @@ pgdata/
 # OS
 .DS_Store
 Thumbs.db
+# Certificados SSL (nunca subir al repo)
+nginx/certs/*.pem
+nginx/certs/*.crt
+nginx/certs/*.key
+Obras Vivas*.xlsx
+*.docx
+venv/
+__pycache__/
